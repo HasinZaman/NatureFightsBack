@@ -4,7 +4,7 @@ using UnityEngine;
 
 using TMPro;
 
-public class AudioSource : MonoBehaviour
+public class VerbalAudioSource : MonoBehaviour
 {
     [SerializeField]
     private GameObject dialogCanvas;
@@ -12,20 +12,23 @@ public class AudioSource : MonoBehaviour
     private List<(TextMeshProUGUI mesh, float size, float timestamp)> text = new List<(TextMeshProUGUI, float, float)>();
 
     private float lifetime = 0;
+    private float lastUpdateTimestamp = 0;
 
     [SerializeField]
-    private AnimationCurve fontSizeCurve = AnimationCurve.EaseInOut(0, 1, 0, 1);
+    private AnimationCurve fontSizeCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
     [SerializeField]
-    private AnimationCurve textLocationCurve = AnimationCurve.EaseInOut(0, 1, 0, 1);
+    private AnimationCurve textLocationCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
     [SerializeField]
-    private float completionStep = 1;
+    private const float maxLifetime = 5f;
+    [SerializeField]
+    private (uint soft, uint hard) maxText = (1, 3);
 
     void Start()
     {
         this.dialogCanvas = GameObject.FindGameObjectsWithTag("Dialog_Canvas")[0];
 
-        addText("Hello world");
+        this.addText("Begining test");
     }
 
 
@@ -44,43 +47,83 @@ public class AudioSource : MonoBehaviour
             (
                 mesh.transform.position,
                 textPositionGoal(this.text.Count - 1 - i1, new Vector3(0, 25), new Vector3(0, 10)),
-                Time.deltaTime,
                 0.5f
             );
             //update size
-            mesh.fontSize = updateFontSize(mesh.fontSize, sizeGoal, 2f, Time.deltaTime);
-
-            //this.text[i1] = (mesh, sizeGoal, duration);
+            mesh.fontSize = updateFontSize(mesh.fontSize, sizeGoal, 0.5f);
         }
-        //iterate through text
-        //update position
+
+        //check if last element has existed past life time or hard limit
+        if (0 < this.text.Count)
+        {
+            int last = 0;
+
+            bool softLimit = this.maxText.soft <= this.text.Count;
+            bool hardLimit = this.maxText.hard < this.text.Count;
+
+            bool lifetimeLimit = VerbalAudioSource.maxLifetime < this.lifetime - this.text[last].timestamp;
+
+            bool visible = this.text[last].mesh.fontSize > 0.001f;
+            
+            bool setToZero = this.text[last].size == 0f;
+
+            //Debug.Log((softLimit, hardLimit, lifetimeLimit, visible, setToZero));
+
+            switch ((softLimit, hardLimit, lifetimeLimit, visible, setToZero))
+            {
+                case (_, _, _, false, true):
+                    //remove text element
+                    GameObject.Destroy(this.text[last].mesh.gameObject);
+
+                    this.text.RemoveAt(last);
+
+                    break;
+                case (_, true, _, true, false):
+                case (true, false, true, true, false):
+                    //set element to be deleted once size is 0
+                    this.lastUpdateTimestamp = this.lifetime;
+                    this.text[last] = (this.text[last].mesh, 0f, this.text[last].timestamp);
+                    break;
+                default:
+                    //do nothing
+                    break;
+            }
+        }
 
         if (this.text.Count > 0)
         {
             lifetime += Time.deltaTime;
         }
-    }
 
-    private float updateFontSize(float current, float goal, float springConstant, float deltaTime)
-    {
-        float delta = goal - current;
-
-        float newSize = current + delta * springConstant * deltaTime; //replace with spring
-
-        if (Mathf.Abs(newSize - goal) <= 0.01f)
+        if (1 < this.lifetime && this.lifetime <= 1 + Time.deltaTime)
         {
-            newSize = goal;
+            this.addText("Hello world");
         }
-
-        return newSize;
+        else if (3 < this.lifetime && this.lifetime <= 3 + Time.deltaTime)
+        {
+            this.addText("Hello world again");
+        }
+        else if (5 < this.lifetime && this.lifetime <= 5 + Time.deltaTime)
+        {
+            this.addText("One more time");
+        }
     }
-    private Vector3 updateTextPosition(Vector3 current, Vector3 goal, float timestamp, float speed)
-    {
-        const float speedFactor = 1;//linear speed
 
-        return Vector3.Lerp(current, goal, speed * (this.lifetime - timestamp));
-        
-        //return Camera.main.WorldToScreenPoint(this.transform.position);
+    private float updateFontSize(float current, float goal, float duration)
+    {
+        float time = (this.lifetime - this.lastUpdateTimestamp) / duration;
+
+        float value = this.fontSizeCurve.Evaluate(Mathf.Clamp(time, 0, 1));
+
+        return Mathf.Lerp(current, goal, value);
+    }
+    private Vector3 updateTextPosition(Vector3 current, Vector3 goal, float duration)
+    {
+        float time = (this.lifetime - this.lastUpdateTimestamp) / duration;
+
+        float value = this.textLocationCurve.Evaluate(Mathf.Clamp(time, 0, 1));
+
+        return Vector3.Lerp(current, goal, value);
     }
     private Vector3 textPositionGoal(int index, Vector3 offset, Vector3 travelDirection)
     {
@@ -89,7 +132,7 @@ public class AudioSource : MonoBehaviour
     }
     public void addText(string text)
     {
-        GameObject tmp = AudioSource.createTextMesh();
+        GameObject tmp = VerbalAudioSource.createTextMesh(text);
         tmp.transform.parent = this.dialogCanvas.transform;
         tmp.transform.position = Camera.main.WorldToScreenPoint(this.transform.position);
         TextMeshProUGUI textMesh = tmp.GetComponent<TextMeshProUGUI>();
@@ -101,18 +144,16 @@ public class AudioSource : MonoBehaviour
         //textMesh.enableAutoSizing = true;
         textMesh.fontSize = 0;
 
+        this.lastUpdateTimestamp = this.lifetime;
         this.text.Add((textMesh, 10, this.lifetime));
-        //create text object
-        //start with size zero
-
     }
 
-    private static GameObject createTextMesh()
+    private static GameObject createTextMesh(string gameObjectName)
     {
         // progmatically initalize gameobject
         return new GameObject
         (
-            "",
+            gameObjectName,
             typeof(CanvasRenderer),
             typeof(TextMeshProUGUI)
         );
