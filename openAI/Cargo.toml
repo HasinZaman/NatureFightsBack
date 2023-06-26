@@ -1,0 +1,12 @@
+[package]
+name = "open_ai_wrapper_test"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "open_ai_wrapper"
+crate-type = ["cdylib"]
+
+[dependencies]
+openai = "1.0.0-alpha.12"
+tokio = "*"
