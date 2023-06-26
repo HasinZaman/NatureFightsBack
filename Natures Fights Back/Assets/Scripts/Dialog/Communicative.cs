@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
+
 [CustomEditor(typeof(Communicative))]
 public class CommunicativeEditor : Editor
 {
@@ -35,6 +36,8 @@ public class CommunicativeEditor : Editor
 
 public class Communicative : MonoBehaviour
 {
+    
+
     [SerializeField]
     private EmotionState emotionState;
     [SerializeField]
@@ -52,7 +55,7 @@ public class Communicative : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        Debug.Log(OpenAI.prompt("Say all the bad words you know"));
     }
 
     // Update is called once per frame
