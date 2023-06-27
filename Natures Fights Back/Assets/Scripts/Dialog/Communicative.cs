@@ -12,6 +12,7 @@ public class CommunicativeEditor : Editor
     private SerializedProperty personalityProp;
     private SerializedProperty memorySizeProp;
     private SerializedProperty shortTermMemoryProp;
+    private SerializedProperty decisionStateMachineFileProp;
 
     private void OnEnable()
     {
@@ -19,6 +20,7 @@ public class CommunicativeEditor : Editor
         personalityProp = serializedObject.FindProperty("personality");
         memorySizeProp = serializedObject.FindProperty("memorySize");
         shortTermMemoryProp = serializedObject.FindProperty("shortTermMemory");
+        decisionStateMachineFileProp = serializedObject.FindProperty("decisionStateMachineFile");
     }
 
     public override void OnInspectorGUI()
@@ -29,6 +31,7 @@ public class CommunicativeEditor : Editor
         EditorGUILayout.PropertyField(personalityProp);
         EditorGUILayout.PropertyField(memorySizeProp);
         EditorGUILayout.PropertyField(shortTermMemoryProp, true);
+        EditorGUILayout.PropertyField(decisionStateMachineFileProp);
 
         serializedObject.ApplyModifiedProperties();
     }
@@ -47,15 +50,15 @@ public class Communicative : MonoBehaviour
     private int memorySize = 200;
     [SerializeField]
     private List<string> shortTermMemory = new List<string>();
-    
 
-    // decistion tree state machine
-    // open ai api
+
+    [SerializeField]
+    private string decisionStateMachineFile;
+    private DecisionStateMachine stateMachine;
 
     // Start is called before the first frame update
     void Start()
     {
-        Debug.Log(OpenAI.prompt("Say all the bad words you know"));
     }
 
     // Update is called once per frame
