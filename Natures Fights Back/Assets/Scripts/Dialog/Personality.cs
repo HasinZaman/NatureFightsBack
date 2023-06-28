@@ -5,7 +5,8 @@ using UnityEngine;
 using UnityEditor;
 
 [System.Serializable]
-public struct Personality
+[CreateAssetMenu(fileName = "EmotionStateData", menuName = "Scriptable Object/Personality")]
+public class Personality : ScriptableObject
 {
     /// <summary>
     /// Represents a trait of a personality.
@@ -34,8 +35,8 @@ public struct Personality
         ColdHearted
     }
 
-
-    private Trait[] _traits;
+    [SerializeField]
+    private Trait[] _traits = new Trait[0];
     /// <summary>
     /// Gets or sets the traits of the personality.
     /// </summary>
@@ -56,13 +57,19 @@ public struct Personality
         }
     }
 
+    [SerializeField]
+    private string _description = "";
+
     /// <summary>
     /// Gets or sets the description of the personality.
     /// </summary>
     public string description
     {
-        get;
-        private set;
+        get => this._description;
+        set
+        {
+            this._description = value;
+        }
     }
 
     /// <summary>
@@ -74,5 +81,82 @@ public struct Personality
     {
         this._traits = traits;
         this.description = description;
+    }
+}
+
+[CustomEditor(typeof(Personality))]
+public class PersonalityEditor : Editor
+{
+    private SerializedProperty traitsProp;
+    private SerializedProperty descriptionProp;
+    private Personality.Trait nextTrait = Personality.Trait.Brave;
+
+    private void OnEnable()
+    {
+        traitsProp = serializedObject.FindProperty("_traits");
+        descriptionProp = serializedObject.FindProperty("_description");
+    }
+
+    public override void OnInspectorGUI()
+    {
+        serializedObject.Update();
+
+        EditorGUILayout.PropertyField(descriptionProp);
+
+        EditorGUILayout.Space();
+        EditorGUILayout.LabelField("Traits", EditorStyles.boldLabel);
+
+        EditorGUI.indentLevel++;
+        List<Personality.Trait> uniqueTraits = new List<Personality.Trait>();
+        for (int i = 0; i < traitsProp.arraySize; i++)
+        {
+            SerializedProperty traitProp = traitsProp.GetArrayElementAtIndex(i);
+
+            Personality.Trait trait = (Personality.Trait)traitProp.enumValueIndex;
+
+            if (!uniqueTraits.Contains(trait))
+            {
+                uniqueTraits.Add(trait);
+
+                EditorGUILayout.BeginHorizontal();
+
+                EditorGUILayout.PropertyField(traitProp);
+
+                if (GUILayout.Button("Remove", GUILayout.Width(60)))
+                {
+                    traitsProp.DeleteArrayElementAtIndex(i);
+                    break;
+                }
+
+                EditorGUILayout.EndHorizontal();
+            }
+            else
+            {
+                traitsProp.DeleteArrayElementAtIndex(i);
+                i--;
+            }
+        }
+
+        EditorGUILayout.Space();
+
+        if (GUILayout.Button("Add Trait"))
+        {
+            traitsProp.arraySize++;
+            SerializedProperty newTraitProp = traitsProp.GetArrayElementAtIndex(traitsProp.arraySize - 1);
+            newTraitProp.enumValueIndex = (int)nextTrait;
+            nextTrait = GetNextTrait(nextTrait);
+        }
+
+        EditorGUI.indentLevel--;
+
+        serializedObject.ApplyModifiedProperties();
+    }
+
+    private Personality.Trait GetNextTrait(Personality.Trait currentTrait)
+    {
+        Personality.Trait[] allTraits = (Personality.Trait[])Enum.GetValues(typeof(Personality.Trait));
+        int currentIndex = Array.IndexOf(allTraits, currentTrait);
+        int nextIndex = (currentIndex + 1) % allTraits.Length;
+        return allTraits[nextIndex];
     }
 }

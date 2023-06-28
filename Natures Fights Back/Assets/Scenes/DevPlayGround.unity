@@ -328,6 +328,39 @@ MonoBehaviour:
     mipBias: 0
     varianceClampScale: 0.9
     contrastAdaptiveSharpening: 0
+--- !u!114 &763368575
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 860d8191b148daf46a172cbe074354af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _orderedEmotions:
+  - _name: joy
+    _intensity: 0
+  - _name: sadness
+    _intensity: 0
+  - _name: anger
+    _intensity: 0
+  - _name: fear
+    _intensity: 0
+  - _name: surprise
+    _intensity: 0
+  - _name: disgust
+    _intensity: 0
+  - _name: love
+    _intensity: 0
+  - _name: excitement
+    _intensity: 0
+  - _name: guilt
+    _intensity: 0
+  - _name: jealousy
+    _intensity: 0
 --- !u!1 &801832311
 GameObject:
   m_ObjectHideFlags: 0
@@ -743,8 +776,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3683aca7f2a90654cb9da0f37f0036b9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  emotionStateData: {fileID: 11400000, guid: cd3bfc67aeae8ff4a90c475f04327f33, type: 2}
+  emotionState: {fileID: 763368575}
+  personality: {fileID: 11400000, guid: aa5fa6dbb4e45d646923200093c70256, type: 2}
   memorySize: 200
   shortTermMemory: []
+  decisionStateMachineFile: 
 --- !u!1 &1609939688
 GameObject:
   m_ObjectHideFlags: 0

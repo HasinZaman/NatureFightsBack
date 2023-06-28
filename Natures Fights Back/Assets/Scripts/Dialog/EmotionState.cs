@@ -1,15 +1,14 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
 
 [System.Serializable]
-public class EmotionState
+public class EmotionState : ScriptableObject
 {
     /// <summary>
     /// Represents an emotion with a name and intensity.
     /// </summary>
+    [System.Serializable]
     public class Emotion : ICloneable
     {
         //todo!() replace String Name with Int name, where the int maps to the emotions array therfore less (less heap allocation)
@@ -17,19 +16,23 @@ public class EmotionState
         /// <summary>
         /// Gets the name of the emotion.
         /// </summary>
+        [SerializeField]
+        private string _name;
         public string Name
         {
-            get;
-            private set;
+            get => this._name;
+            private set{this._name = value;}
         }
 
         /// <summary>
         /// Gets or sets the intensity of the emotion.
         /// </summary>
-        public byte Intensity
+        [SerializeField]
+        private int _intensity;
+        public int Intensity
         {
-            get;
-            set;
+            get => this._intensity;
+            set { this._intensity = value; }
         }
 
         /// /// <summary>
@@ -45,7 +48,7 @@ public class EmotionState
         /// </summary>
         /// <param name="name">The name of the emotion.</param>
         /// <param name="intensity">The intensity of the emotion.</param>
-        public Emotion(string name, byte intensity)
+        public Emotion(string name, int intensity)
         {
             this.Name = name;
             this.Intensity = intensity;
@@ -60,28 +63,41 @@ public class EmotionState
             return new Emotion((string)this.Name.Clone(), this.Intensity);
         }
     }
-    private static string[] adjectives = new string[]
+    public static string[] adjectives
     {
-        "serene",
-        "moderate",
-        "subdued",
-        "heightened",
-        "overwhelm"
-    };
-    private static string[] emotions = new string[]
+        get
+        {
+            return new string[]
+            {
+                "serene",
+                "moderate",
+                "subdued",
+                "heightened",
+                "overwhelm"
+            };
+        }
+    } 
+    public static string[] emotions
     {
-        "joy",
-        "sadness",
-        "anger",
-        "fear",
-        "surprise",
-        "disgust",
-        "love",
-        "excitement",
-        "guilt",
-        "jealousy"
-    };
+        get
+        {
+            return new string[]
+                {
+                    "joy",
+                    "sadness",
+                    "anger",
+                    "fear",
+                    "surprise",
+                    "disgust",
+                    "love",
+                    "excitement",
+                    "guilt",
+                    "jealousy"
+                };
+        }
+    }
 
+    [SerializeField]
     private Emotion[] _orderedEmotions;
     public Emotion[] orderedEmotions
     {
@@ -101,33 +117,48 @@ public class EmotionState
         }
     }
 
+    [SerializeField]
     private Dictionary<string, Emotion> emotionDict;
-    private Emotion this[string key]
+    public string[] allEmotions
     {
         get
         {
-            //clone of data
-            return (Emotion)emotionDict[key].Clone();
+            string[] emotions = new string[this.emotionDict.Count];
+
+            int i1 = 0;
+            foreach(string emotion in this.emotionDict.Keys)
+            {
+                emotions[i1++] = emotion;
+            }
+
+            return emotions;
+        }
+    }
+    public Emotion this[string key]
+    {
+        get
+        {
+            return emotionDict[key].Clone() as Emotion;
         }
         set
         {
             int pointer;
             //intialize pointer value
             for (pointer = 0; pointer < this._orderedEmotions.Length && this._orderedEmotions[pointer].Name != key; pointer++) ;
-
+            
             if (pointer >= this._orderedEmotions.Length)
             {
                 throw new KeyNotFoundException();
             }
 
-            this._orderedEmotions[pointer] = value;
+            this._orderedEmotions[pointer].Intensity = value.Intensity;
 
             Func<int, int> compareIndex = (index) => Math.Clamp(index, 0, this._orderedEmotions.Length - 1);
 
             //shift left (larger value)
             while (this._orderedEmotions[pointer].Intensity < this._orderedEmotions[compareIndex(pointer - 1)].Intensity)
             {
-                ref Emotion tmp = ref this._orderedEmotions[pointer];
+                Emotion tmp = this._orderedEmotions[pointer];
 
                 this._orderedEmotions[pointer] = this._orderedEmotions[compareIndex(pointer - 1)];
                 this._orderedEmotions[compareIndex(pointer - 1)] = tmp;
@@ -138,7 +169,7 @@ public class EmotionState
             //shift right (smaller value)
             while (this._orderedEmotions[compareIndex(pointer + 1)].Intensity < this._orderedEmotions[pointer].Intensity)
             {
-                ref Emotion tmp = ref this._orderedEmotions[pointer];
+                 Emotion tmp = this._orderedEmotions[pointer];
 
                 this._orderedEmotions[pointer] = this._orderedEmotions[compareIndex(pointer + 1)];
                 this._orderedEmotions[compareIndex(pointer + 1)] = tmp;
@@ -153,10 +184,13 @@ public class EmotionState
     /// </summary>
     public EmotionState()
     {
+        this.emotionDict = new Dictionary<string, Emotion>();
         this._orderedEmotions = new Emotion[EmotionState.emotions.Length];
+
         for (int i1 = 0; i1 < EmotionState.emotions.Length; i1++)
         {
             this._orderedEmotions[i1] = new Emotion(EmotionState.emotions[i1], 0);
+            this.emotionDict.Add(EmotionState.emotions[i1], this._orderedEmotions[i1]);
         }
     }
 
@@ -164,9 +198,9 @@ public class EmotionState
     /// Initializes a new instance of the <see cref="EmotionState"/> class with the specified initial values.
     /// </summary>
     /// <param name="initialValue">The initial values as a collection of emotion names and intensities.</param>
-    public EmotionState(params (string, byte)[] initalValue) : this()
+    public EmotionState(params (string, int)[] initalValue) : this()
     {
-        foreach ((string emotion, byte intensity) in initalValue)
+        foreach ((string emotion, int intensity) in initalValue)
         {
             Emotion tmp = this[emotion];
             tmp.Intensity = intensity;
@@ -179,15 +213,20 @@ public class EmotionState
     /// Initializes a new instance of the <see cref="EmotionState"/> class with the specified initial values and intensity range.
     /// </summary>
     /// <param name="initialValue">The initial values as a collection of emotion names and intensity ranges.</param>
-    public EmotionState(params (string, (byte min, byte max))[] initalValue) : this()
+    public EmotionState(params (string, (int min, int max))[] initalValue) : this()
     {
-        foreach ((string emotion, (byte min, byte max)) in initalValue)
+        foreach ((string emotion, (int min, int max)) in initalValue)
         {
             Emotion tmp = this[emotion];
-            tmp.Intensity = (byte)new System.Random().Next(min, max + 1);
+            tmp.Intensity = new System.Random().Next(min, max + 1);
 
             this[emotion] = tmp;
         }
+    }
+
+    public EmotionState(EmotionStateData data) : this(data.Emotions)
+    {
+
     }
 
     /// <summary>
@@ -195,7 +234,7 @@ public class EmotionState
     /// </summary>
     /// <param name="intensity">The intensity value.</param>
     /// <returns>The adjective associated with the intensity.</returns>
-    public static string getIntensityAdjective(byte intensity)
+    public static string getIntensityAdjective(int intensity)
     {
         if (intensity < 20)
         {
