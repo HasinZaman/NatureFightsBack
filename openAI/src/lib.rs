@@ -23,7 +23,7 @@ pub extern "C" fn prompt_query_extern(prompt: *const c_char) -> *mut c_char {
 }
 
 pub fn process_prompt_query(prompt: &str) -> String {
-    set_key(env::var("OPENAI_KEY").unwrap());
+    set_key("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".into());
 
     let mut rt = Runtime::new().unwrap();
     let completion = rt.block_on(async move {
