@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class MoveCamera : MonoBehaviour
 {
+    float CameraSpeed = 0.01f;
                public GameObject prefab;
     // Start is called before the first frame update
     void Start()
@@ -21,13 +22,13 @@ public class MoveCamera : MonoBehaviour
     {
         Vector3 posOffset = new Vector3(0,0,0);
     if (Input.GetKey(KeyCode.W))
-        posOffset.y += 0.01f;
+        posOffset.y += CameraSpeed;
     if (Input.GetKey(KeyCode.S))
-        posOffset.y -= 0.01f;
+        posOffset.y -= CameraSpeed;
     if (Input.GetKey(KeyCode.A))
-        posOffset.x -= 0.01f;
+        posOffset.x -= CameraSpeed;
     if (Input.GetKey(KeyCode.D))
-        posOffset.x += 0.01f;
+        posOffset.x += CameraSpeed;
     transform.position += posOffset;
    }
 }
