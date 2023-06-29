@@ -27,8 +27,6 @@ public class VerbalAudioSource : MonoBehaviour
     void Start()
     {
         this.dialogCanvas = GameObject.FindGameObjectsWithTag("Dialog_Canvas")[0];
-
-        this.addText("Begining test");
     }
 
 
@@ -50,7 +48,7 @@ public class VerbalAudioSource : MonoBehaviour
                 0.5f
             );
             //update size
-            mesh.fontSize = updateFontSize(mesh.fontSize, sizeGoal, 0.5f);
+            mesh.fontSize = updateFontSize(mesh.fontSize, sizeGoal, 1f);
         }
 
         //check if last element has existed past life time or hard limit
@@ -88,29 +86,14 @@ public class VerbalAudioSource : MonoBehaviour
                     //do nothing
                     break;
             }
-        }
 
-        if (this.text.Count > 0)
-        {
-            lifetime += Time.deltaTime;
-        }
-
-        if (1 < this.lifetime && this.lifetime <= 1 + Time.deltaTime)
-        {
-            this.addText("Hello world");
-        }
-        else if (3 < this.lifetime && this.lifetime <= 3 + Time.deltaTime)
-        {
-            this.addText("Hello world again");
-        }
-        else if (5 < this.lifetime && this.lifetime <= 5 + Time.deltaTime)
-        {
-            this.addText("One more time");
+            this.lifetime += Time.deltaTime;
         }
     }
 
     private float updateFontSize(float current, float goal, float duration)
     {
+
         float time = (this.lifetime - this.lastUpdateTimestamp) / duration;
 
         float value = this.fontSizeCurve.Evaluate(Mathf.Clamp(time, 0, 1));
@@ -143,6 +126,11 @@ public class VerbalAudioSource : MonoBehaviour
         textMesh.verticalAlignment = VerticalAlignmentOptions.Middle;
         //textMesh.enableAutoSizing = true;
         textMesh.fontSize = 0;
+
+        {
+            RectTransform rect = textMesh.rectTransform;
+            rect.sizeDelta = new Vector2(10 * text.Length / 2f, 10);
+        }
 
         this.lastUpdateTimestamp = this.lifetime;
         this.text.Add((textMesh, 10, this.lifetime));

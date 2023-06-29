@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b1c1640c6848a040a1928919d536419, type: 3}
   m_Name: Default Personality
   m_EditorClassIdentifier: 
-  _traits: 00000000
-  _description: dfdsf
+  _traits: 050000000d00000009000000
+  _description: I am bar tender

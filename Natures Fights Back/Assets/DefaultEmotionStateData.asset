@@ -12,4 +12,44 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2784e51455a33744cb424c4ae23fa063, type: 3}
   m_Name: DefaultEmotionStateData
   m_EditorClassIdentifier: 
-  emotions: []
+  emotions:
+  - emotion: joy
+    range:
+      min: 40
+      max: 75
+  - emotion: sadness
+    range:
+      min: 20
+      max: 80
+  - emotion: anger
+    range:
+      min: 0
+      max: 10
+  - emotion: fear
+    range:
+      min: 0
+      max: 10
+  - emotion: surprise
+    range:
+      min: 0
+      max: 10
+  - emotion: disgust
+    range:
+      min: 60
+      max: 90
+  - emotion: love
+    range:
+      min: 0
+      max: 5
+  - emotion: excitement
+    range:
+      min: 0
+      max: 5
+  - emotion: guilt
+    range:
+      min: 40
+      max: 80
+  - emotion: jealousy
+    range:
+      min: 0
+      max: 45

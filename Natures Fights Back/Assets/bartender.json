@@ -1,0 +1,21 @@
+{
+	"States": [
+		{
+			"Name": "Content",
+			"NextStates": [
+				{
+					"Name": "Annoyed",
+					"Condition": {
+						"type": ">",
+						"key": "anger",
+						"value": 18
+					}
+				}
+			]
+		},
+		{
+			"Name": "Annoyed",
+			"NextStates": []
+		}
+	]
+}

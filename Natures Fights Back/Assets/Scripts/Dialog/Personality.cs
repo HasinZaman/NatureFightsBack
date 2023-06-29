@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using System.Linq;
 
 [System.Serializable]
 [CreateAssetMenu(fileName = "EmotionStateData", menuName = "Scriptable Object/Personality")]
@@ -82,6 +83,12 @@ public class Personality : ScriptableObject
         this._traits = traits;
         this.description = description;
     }
+
+    public override string ToString()
+    {
+        string traitList = string.Join(",", traits.Select(trait => trait.ToString()).ToArray());
+        return $"description: {description}\ntraits: {traitList}";
+    }
 }
 
 [CustomEditor(typeof(Personality))]
@@ -159,4 +166,5 @@ public class PersonalityEditor : Editor
         int nextIndex = (currentIndex + 1) % allTraits.Length;
         return allTraits[nextIndex];
     }
+
 }

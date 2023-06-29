@@ -11,6 +11,21 @@ public class EmotionState : ScriptableObject
     [System.Serializable]
     public class Emotion : ICloneable
     {
+        /// <summary>
+         /// Comparer for sorting emotions based on intensity.
+         /// </summary>
+        public class IntensityComparer : IComparer<Emotion>
+        {
+            public int Compare(Emotion x, Emotion y)
+            {
+                // Compare the intensity values of the two emotions
+                if (x.Intensity < y.Intensity)
+                    return -1;
+                if (x.Intensity > y.Intensity)
+                    return 1;
+                return 0;
+            }
+        }
         //todo!() replace String Name with Int name, where the int maps to the emotions array therfore less (less heap allocation)
 
         /// <summary>
@@ -61,6 +76,11 @@ public class EmotionState : ScriptableObject
         public object Clone()
         {
             return new Emotion((string)this.Name.Clone(), this.Intensity);
+        }
+
+        public override string ToString()
+        {
+            return $"{EmotionState.getIntensityAdjective(this.Intensity)} {this.Name}";
         }
     }
     public static string[] adjectives
@@ -255,4 +275,84 @@ public class EmotionState : ScriptableObject
 
         return EmotionState.adjectives[4];
     }
+
+    public Emotion[] consciousEmotions(int threshold)
+    {
+        List<Emotion> consciousEmotions = new List<Emotion>();
+
+        // Perform a binary search to find the index of the first emotion with intensity greater than the threshold
+        int startIndex = Array.BinarySearch(this._orderedEmotions, new Emotion("", threshold), new Emotion.IntensityComparer());
+        if (startIndex < 0)
+        {
+            // If the exact threshold is not found, convert the index to a valid insertion point
+            startIndex = ~startIndex;
+        }
+
+        // Add all emotions with intensity greater than the threshold
+        for (int i = startIndex; i < this._orderedEmotions.Length; i++)
+        {
+            consciousEmotions.Add(this._orderedEmotions[i]);
+        }
+
+        if (consciousEmotions.Count == 0)
+        {
+            int last = this._orderedEmotions.Length - 1;
+            consciousEmotions.Add(this._orderedEmotions[last]);
+        }
+
+        return consciousEmotions.ToArray();
+    }
+
+    public static (int, string)[] parseEmotionString(string rawString)
+    {
+        List<(int, string)> result = new List<(int, string)>();
+
+        string[] emotions = rawString.Split(',');
+
+        foreach (string rawEmotion in rawString.Split(','))
+        {
+            string[] components = rawEmotion.ToLower().Split(' ');
+
+            if (components.Length != 3)
+                continue;
+
+            int delta;
+            string emotion = components[2];
+
+            switch (components[1])
+            {
+                case "serene":
+                    delta = 1;
+                    break;
+                case "moderate":
+                    delta = 2;
+                    break;
+                case "subdued":
+                    delta = 4;
+                    break;
+                case "heightened":
+                    delta = 8;
+                    break;
+                case "overwhelm":
+                    delta = 16;
+                    break;
+                default:
+                    delta = 0;
+                    break;
+            }
+
+            if (delta == 0)
+                continue;
+
+            if (components[0] == "less")
+            {
+                delta *= -1;
+            }
+
+            result.Add((delta, emotion.Trim()));
+        }
+
+        return result.ToArray();
+    }
+
 }

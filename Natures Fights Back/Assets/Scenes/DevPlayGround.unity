@@ -715,7 +715,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25263ef7662001c42b678e7004ca6b3f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dialogCanvas: {fileID: 0}
+  dialogCanvas: {fileID: 1342032510}
   fontSizeCurve:
     serializedVersion: 2
     m_Curve:
@@ -779,9 +779,10 @@ MonoBehaviour:
   emotionStateData: {fileID: 11400000, guid: cd3bfc67aeae8ff4a90c475f04327f33, type: 2}
   emotionState: {fileID: 763368575}
   personality: {fileID: 11400000, guid: aa5fa6dbb4e45d646923200093c70256, type: 2}
-  memorySize: 200
+  memorySize: 100
   shortTermMemory: []
-  decisionStateMachineFile: 
+  decisionStateMachineFile: Assets\\bartender.json
+  source: {fileID: 0}
 --- !u!1 &1609939688
 GameObject:
   m_ObjectHideFlags: 0
