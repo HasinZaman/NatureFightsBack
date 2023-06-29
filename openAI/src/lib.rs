@@ -7,6 +7,8 @@ use openai::completions::Completion;
 use openai::set_key;
 use tokio::runtime::Runtime;
 
+mod API_Key;
+
 #[no_mangle]
 pub extern "C" fn prompt_query_extern(prompt: *const c_char) -> *mut c_char {
     let input_string = if prompt.is_null() {
@@ -23,7 +25,7 @@ pub extern "C" fn prompt_query_extern(prompt: *const c_char) -> *mut c_char {
 }
 
 pub fn process_prompt_query(prompt: &str) -> String {
-    set_key("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".into());
+    set_key(API_Key::API_KEY.into());
 
     let mut rt = Runtime::new().unwrap();
     let completion = rt.block_on(async move {
